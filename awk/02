@@ -1,0 +1,32 @@
+#!/bin/awk -f
+
+{
+  color_counts["blue"] = 0
+  color_counts["green"] = 0
+  color_counts["red"] = 0
+  split(substr($0, index($0, ":") + 2), sets, /;/)
+  for(sk in sets) {
+    split(sets[sk], colors, /,/)
+    for (ck in colors){
+      for (cck in color_counts) {
+        if (colors[ck] ~ cck){
+          color_counts[cck] = max(color_counts[cck], (colors[ck] + 0))
+        }
+      }
+    }
+  }
+  power = 1
+  for (cck in color_counts){
+    power *= color_counts[cck]
+  }
+  power_sum += power
+}
+END{
+  print power_sum
+}
+
+function max(a, b) {
+  if (a >= b)
+    return a
+  return b
+}
