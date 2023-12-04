@@ -1,23 +1,19 @@
 #!/bin/awk -f
 
 BEGIN { 
+	split("one two three four five six seven eight nine", numbers)
 	FS = "" # Set field seperator to "" so that NF is the number of characters.
 }
 
 {
 	# while line contains word number, replace the first word first char with the digit.
 	while ( /(one)|(two)|(three)|(four)|(five)|(six)|(seven)|(eight)|(nine)/ ) {
-		pos[index($0, "one")] = "one"
-		pos[index($0, "two")] = "two"
-		pos[index($0, "three")] = "three"
-		pos[index($0, "four")] = "four"
-		pos[index($0, "five")] = "five"
-		pos[index($0, "six")] = "six"
-		pos[index($0, "seven")] = "seven"
-		pos[index($0, "eight")] = "eight"
-		pos[index($0, "nine")] = "nine"
+		for (k in numbers)
+			pos[index($0, numbers[k])] = numbers[k]
+
 		delete pos[0] # remove not found
 		asorti(pos, dest) # sort on index
+
 		# replace the first letter of the first word with the number
 		ind = index($0, pos[dest[1]])
 		$0 = substr($0, 1, ind - 1) word_to_number(pos[dest[1]]) substr($0, ind + 1)
@@ -32,28 +28,9 @@ END {
 }
 
 function word_to_number(word) {
-	switch (word) {
-		case "zero":
-			return 0
-		case "one":
-			return 1
-		case "two":
-			return 2
-		case "three":
-			return 3
-		case "four":
-			return 4
-		case "five":
-			return 5
-		case "six":
-			return 6
-		case "seven":
-			return 7
-		case "eight":
-			return 8
-		case "nine":
-			return 9
-
-		return 0
-	}
+	for (k in numbers)
+		if (word == numbers[k])
+			return k
+	return 0
 }
+
