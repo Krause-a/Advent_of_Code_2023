@@ -1,0 +1,27 @@
+#!/bin/awk -f
+
+BEGIN {
+  RS = "[\n]?Card +[[:digit:]]+: "
+  NR = -1
+}
+
+NF > 0 {
+  card_count[NR] += 1
+  split($0, portions, "|")
+  split(portions[1], winners)
+  $0 = substr($0, index($0, "|") + 2)
+  count = 0
+  for (k in winners) {
+    count += gsub(("\\<" winners[k] "\\>"), " ")
+  }
+  for (i = NR + 1; i <= NR + count; i++) {
+    card_count[i] += card_count[NR]
+  }
+
+  sum += card_count[NR]
+}
+
+END {
+  print sum;
+}
+

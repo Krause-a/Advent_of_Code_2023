@@ -1,0 +1,23 @@
+#!/bin/awk -f
+
+BEGIN {
+  RS = "[\n]?Card +[[:digit:]]+: "
+}
+
+NF > 0 {
+  split($0, portions, "|")
+  split(portions[1], winners)
+  $0 = substr($0, index($0, "|") + 2)
+  count = 0
+  for (k in winners) {
+    count += gsub(("\\<" winners[k] "\\>"), " ")
+  }
+  if (count > 0) {
+    sum += 2 ** (count - 1)
+  }
+}
+
+END {
+  print sum;
+}
+
