@@ -1,0 +1,81 @@
+#!/bin/awk -f
+
+# This only handles the simplest case. It ignores symbols in both the first and last row. This should also double/triple/w/e count each number.
+
+BEGIN {
+	line[1] = ""
+	line[2] = ""
+	line[3] = ""
+	FS = ""
+}
+{
+	line[1] = line[2]
+	line[2] = line[3]
+	line[3] = $0
+}
+NR > 2 {
+	$0 = line[2]
+	for (i = 1; i <= NF; i++){
+		if ($i ~ /([*])/){
+			split("", numbers)
+			for (j = 1; j <= 3; j++) {
+				split(line[j], chars, "")
+				get_numbers(chars, i, temp);
+				for (temp_k in temp) {
+					if (temp[temp_k] > 0) {
+						numbers[j, temp_k] = temp[temp_k]
+					}
+				}
+			}
+			if (length(numbers) == 2) {
+				mult = 1
+				for (n_k in numbers) {
+					mult *= numbers[n_k]
+				}
+				sum += mult
+			}
+		}
+	}
+}
+END {
+	print sum
+}
+
+function get_numbers(chars, i, _numbers) {
+	split("", _numbers);
+	# If there is a number in the center there are no other numbers
+	# Else there might be numbers surrounding. But they will not touch.
+	if (!get_number_around_digit(chars, i)) {
+		_numbers[2] = get_number_around_digit(chars, i - 1)
+		_numbers[3] = get_number_around_digit(chars, i + 1)
+	} else {
+		_numbers[1] = get_number_around_digit(chars, i)
+	}
+}
+
+function get_number_around_digit(line_chars, ind,   number, i) {
+	if (line_chars[ind] !~ /[[:digit:]]/) {
+		return 0
+	}
+
+	number = line_chars[ind]
+	for (i = ind + 1; i <= length(line_chars); i++){
+		if (line_chars[i] ~ /[[:digit:]]/){
+			number = number line_chars[i]
+		}
+		else {
+			break;
+		}
+	}
+
+	for (i = ind - 1; i > 0; i--){
+		if (line_chars[i] ~ /[[:digit:]]/){
+			number = line_chars[i] number
+		}
+		else {
+			break;
+		}
+	}
+
+  return number + 0
+}

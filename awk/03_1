@@ -27,7 +27,7 @@ NR > 2 {
   }
 }
 END {
-  print "END: " sum
+  print sum
 }
 
 function do_sum(chars, i) {
