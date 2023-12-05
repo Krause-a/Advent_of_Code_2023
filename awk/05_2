@@ -1,0 +1,70 @@
+#!/bin/awk -f
+
+NR < 2 {
+	seed_index = 0
+	for (i = 2; i <= NF; i += 2){
+		for (r = $i; r < ($i + $(i + 1)); r++) {
+			seeds[seed_index, "seed"] = r
+			seed_index++
+			if (seed_index % 100000 == 0)
+				print seed_index
+		}
+	}
+	seed_count = length(seeds)
+	RS = "\n\n"
+	FS = "\n"
+}
+
+NR >= 2 {
+	start_index = 2
+	for (k = 1; k < NF; k++){
+		if (length($k) > 0) {
+			start_index = k
+			break
+		}
+	}
+	split($start_index, mapping_line, " ")
+	split(mapping_line[1], mapping, "-")
+	map_seeds(mapping[1], mapping[3], start_index)
+}
+
+END {
+	print min(seeds)
+}
+
+function map_seeds(from, to, start_index,		seed_num, set, i, j) {
+	print "Mapping from " from " to " to " on " seed_count " seeds"
+	for (i = 1; i <= seed_count; i++){
+		for (j = start_index; j <= NF; j++){
+			split($j, set, " ")
+			if (!((i, from) in seeds)) {
+				continue
+			}
+			seed_num = seeds[i, from]
+			if (seed_num >= set[2] && seed_num < (set[2] + set[3])) {
+				seeds[i, to] = seed_num - set[2] + set[1]
+				delete seeds[i, from]
+			}
+		}
+	}
+	for (i = 1; i <= seed_count; i++) {
+		if ((i, from) in seeds){
+			seeds[i, to] = seeds[i, from]
+			delete seeds[i, from]
+		}
+	}
+}
+
+function min(arr,		i, m) {
+	m = 99999999999999
+	for (i in arr) {
+		if (m > arr[i]) m = arr[i]
+	}
+	return m
+}
+
+func print_arr(arr,k){
+
+	for (k in arr)
+		print k "=>" arr[k]
+}
