@@ -1,0 +1,43 @@
+#!/bin/awk -f
+
+BEGIN {
+	FS = ":"
+}
+
+{
+	gsub(/\s+/, "")
+	time = +$2
+	getline
+	gsub(/\s+/, "")
+	dis = +$2
+	stepdef = 10000
+	step = stepdef
+	for (ms = 1; ms < time; ms += step) {
+		travel = ms * (time - ms)
+		if (travel > dis) {
+			print "Greater"
+			if (step > 1) {
+				ms -= step
+				step = 1
+			}
+			else if (step == -1) {
+				end = ms
+				break
+			}
+			else if (step < -1) {
+				ms -= step
+				step = -1
+			}
+			else {
+				start = ms
+				step = -stepdef
+				ms = time - 1
+			}
+		}
+	}
+}
+
+END {
+	print end - start + 1
+}
+

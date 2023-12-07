@@ -1,0 +1,27 @@
+#!/bin/awk -f
+
+BEGIN {
+	mult = 1
+}
+
+{
+	split($0, times)
+	getline d
+	split(d, distances)
+	for (i = 2; i <= NF; i++) {
+		sum = 0
+		dis = distances[i]
+		time = times[i]
+		for (ms = 1; ms < time; ms++) {
+			travel = ms * (time - ms)
+			if (travel > dis) {
+				sum++
+			}
+		}
+		mult *= sum
+	}
+}
+
+END {
+	print mult
+}
