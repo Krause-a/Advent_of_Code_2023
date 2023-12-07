@@ -1,0 +1,85 @@
+#!/bin/awk -f
+
+BEGIN {
+	split("2 3 4 5 6 7 8 9 T J Q K A", cards)
+	split("high one two three full four five", types)
+}
+
+{
+	split("", hand)
+
+
+	for (c_t in cards) {
+		hand[c_t] = gsub(cards[c_t], cards[c_t], $1)
+	}
+	h_t = hand_type(hand)
+
+	ind = hands[h_t, "index"]++
+	hands[h_t, ind, "cards"] = $1
+	hands[h_t, ind, "bid"] = $2
+}
+
+END {
+	for (type_k in types) {
+		for (hand_k in hands) {
+			if (hand_k ~ types[type_k]) {
+				print hand_k " == " hands[hand_k]
+			}
+		}
+	}
+}
+
+function print_arr(arr, k) {
+	for (k in arr)
+		print k "=>" arr[k]
+}
+
+function print_arr_key_sorted(arr,		k, sor, sor_k) {
+	asorti(arr, sor)
+	for (sor_k in sor) {
+		print sor[sor_k] " => " arr[sor[sor_k]]
+	}
+}
+
+function card_value(card,		k) {
+	for (k in cards) {
+		if (card == cards[k]) {
+			return k
+		}
+	}
+}
+
+function max(arr,		k, m) {
+	m = 0
+	for (k in arr) {
+		if (arr[k] > m) {
+			m = arr[k]
+		}
+	}
+	return m
+}
+
+function hand_type(hand_counts,		m, n, high) {
+	h_t = "high"
+	m = max(hand)
+	if (m == 5) {
+		h_t = "five"
+	} else if (m == 4) {
+		h_t = "four"
+	} else {
+		asort(hand)
+		n = hand[length(cards) - 1]
+		if (m == 3 && n == 2) {
+			h_t = "full"
+		} else if (m == 3) {
+			h_t = "three"
+		} else if (m == 2 && n == 2) {
+			h_t = "two"
+		} else if (m == 2) {
+			h_t = "one"
+		} else {
+			h_t = "high"
+		}
+	}
+	return h_t
+}
