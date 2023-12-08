@@ -3,6 +3,7 @@
 BEGIN {
 	split("2 3 4 5 6 7 8 9 T J Q K A", cards)
 	split("high one two three full four five", types)
+	counter = 1
 }
 
 {
@@ -12,21 +13,46 @@ BEGIN {
 	for (c_t in cards) {
 		hand[c_t] = gsub(cards[c_t], cards[c_t], $1)
 	}
-	h_t = hand_type(hand)
+	type_k = get_hand_type(hand)
 
-	ind = hands[h_t, "index"]++
-	hands[h_t, ind, "cards"] = $1
-	hands[h_t, ind, "bid"] = $2
+	ind = hands[type_k, "index"]++
+	hands[type_k, ind, "cards"] = $1
+	hands[type_k, ind, "bid"] = $2
 }
 
 END {
 	for (type_k in types) {
-		for (hand_k in hands) {
-			if (hand_k ~ types[type_k]) {
-				print hand_k " == " hands[hand_k]
+		print types[type_k] " has " hands[types[type_k], "index"] " and total is " total
+		split("", these_hands)
+		for (i = 0; i < hands[types[type_k], "index"]; i++) {
+			these_hands[i] = hands[types[type_k], i, "cards"]
+		}
+		asort(these_hands, them_hands, "card_order")
+		for (sort_k in them_hands) {
+			for (i = 0; i < hands[types[type_k], "index"]; i++) {
+				if (them_hands[sort_k] == hands[types[type_k], i, "cards"]) {
+					total += counter++ * hands[types[type_k], i, "bid"]
+				}
 			}
 		}
 	}
+	print counter
+	print total
+}
+
+function card_order(i1, v1, i2, v2,		hand1, hand2, card1, card2, c, v) {
+	split(v1, hand1, "")
+	split(v2, hand2, "")
+	for ( c = 1; c <= 5; c++) {
+		card1 = get_card_value(hand1[c])
+		card2 = get_card_value(hand2[c])
+		if (card1 != card2) break
+	}
+	if (card1 == card2) v = 0
+	else if (card1 > card2) v = 1
+	else v = -1
+	# print v1 " vs " v2 " = " v
+	return v
 }
 
 function print_arr(arr, k) {
@@ -59,7 +85,52 @@ function max(arr,		k, m) {
 	return m
 }
 
-function hand_type(hand_counts,		m, n, high) {
+function get_card_value(card) {
+	switch (card) {
+		case "A":
+			return 13
+			break
+		case "K":
+			return 12
+			break
+		case "Q":
+			return 11
+			break
+		case "J":
+			return 10
+			break
+		case "T":
+			return 9
+			break
+		case "9":
+			return 8
+			break
+		case "8":
+			return 7
+			break
+		case "7":
+			return 6
+			break
+		case "6":
+			return 5
+			break
+		case "5":
+			return 4
+			break
+		case "4":
+			return 3
+			break
+		case "3":
+			return 2
+			break
+		case "2":
+			return 1
+			break
+
+	}
+}
+
+function get_hand_type(hand_counts,		m, n, high) {
 	h_t = "high"
 	m = max(hand)
 	if (m == 5) {
