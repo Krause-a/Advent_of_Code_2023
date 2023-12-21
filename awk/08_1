@@ -1,0 +1,31 @@
+#!/bin/awk -f
+
+NR == 1 {
+	split($0, lrs, "")
+	FS = "[ =(),]+"
+}
+NR == 3 { current_inst = $1 }
+NR != 1 && NF > 2 {
+	inst[$1] = $2 OFS $3
+}
+END {
+	lrs_l = length(lrs)
+	while ( current_inst != "ZZZ" ) {
+		lr = lrs[++ind]
+		if (ind == length(lrs)) ind = 0
+		split(inst[current_inst], lr_inst)
+		current_inst = lr_inst[lr == "L" ? 1 : 2]
+		past_inst[current_isnt, lr, ind]++
+		if (past_inst[current_isnt, lr, ind] > 1) {
+			print "Found duplicate on " step " " current_inst
+			print_arr(past_inst)
+			break
+		}
+		step++
+	}
+	print step
+}
+function print_arr(arr,k) {
+	for (k in arr) 
+		print k "=>" arr[k]
+}
