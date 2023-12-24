@@ -1,0 +1,97 @@
+#!/bin/awk -f
+
+# NR == 27{
+{
+  split($0, line)
+  depth = 0
+  split("", prediction_lines)
+  meld(line, depth, prediction_lines)
+  # sanity_check = $NF - $(NF - 1) + $NF
+  while (sum_arr(line) != 0) {
+    # print length(line) " " sum_arr(line)
+    # print_arr_as_line(line, rep(" ", depth))
+    depth++
+    diff_arr(line, next_line)
+    copy_to(next_line, line)
+    meld(line, depth, prediction_lines)
+  }
+  # print_arr_as_line(line, rep(" ", depth))
+  # print_arr(prediction_lines)
+  answer = 0
+  for (; depth >= 0; depth--) {
+    answer += prediction_lines[depth, NF]
+    # print answer
+  }
+  sum += answer
+  # print answer
+  # ratio = answer / sanity_check
+  # print "Line: " NR " Ratio: " ratio " Answer: " answer " Check: " sanity_check
+  # if (abs(ratio) > 1.5) {
+  #   asorti(prediction_lines, testing)
+  #   print_arr(testing, prediction_lines)
+  #   exit
+  # }
+}
+END {
+  print sum
+}
+
+function print_arr_as_line(arr, p_line, k) {
+  for (k in arr) {
+    p_line = p_line " " arr[k]
+  }
+  print p_line
+}
+
+function diff_arr(arr, _out_arr,    k, once, prev_k) {
+  split("", _out_arr)
+  for (k in arr) {
+    if (!once) {
+      once = 1
+      prev_k = k
+      continue
+    }
+    # print "DIFF " arr[k] " - " arr[prev_k] " = " (arr[k] - arr[prev_k])
+    _out_arr[k] = arr[k] - arr[prev_k]
+    prev_k = k
+  }
+}
+
+function sum_arr(arr,   s, k) {
+  for (k in arr) s += arr[k] + 0
+  return s
+}
+
+function copy_to(source, destination) {
+  split("", destination)
+  for (k in source) {
+    destination[k] = source[k]
+  }
+}
+
+function print_arr(arr, value_arr,   k) {
+  if (length(value_arr) < 1) {
+    for (k in arr) print k "=>" arr[k]
+  } else {
+    for (k in arr) {
+      print arr[k] "=>" value_arr[arr[k]]
+    }
+  }
+}
+
+function rep(str, count,    i, res) {
+  for (i = 0; i < count; i++) {
+    res = res str
+  }
+  return res
+}
+
+function meld(arr, key, _out_arr,   k) {
+  for (k in arr) {
+    _out_arr[key, k] = arr[k]
+  }
+}
+
+function abs(v) {
+  return v > 0 ? v : -v
+}
