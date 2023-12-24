@@ -1,0 +1,116 @@
+#!/bin/awk -f
+
+BEGIN {
+	split("J 2 3 4 5 6 7 8 9 T Q K A", cards)
+	split("high one two three full four five", types)
+	counter = 1
+}
+
+{
+	split("", hand)
+
+
+	for (c_t in cards) {
+		hand[c_t] = gsub(cards[c_t], cards[c_t], $1)
+	}
+  if (length($1) < 1) next
+	type_k = get_hand_type(hand)
+
+	ind = hands[type_k, "index"]++
+	hands[type_k, ind, "cards"] = $1
+	hands[type_k, ind, "bid"] = $2
+}
+
+END {
+	for (type_k in types) {
+		split("", these_hands)
+		for (i = 0; i < hands[types[type_k], "index"]; i++) {
+			these_hands[i] = hands[types[type_k], i, "cards"]
+		}
+		asort(these_hands, them_hands, "card_order")
+		for (sort_k in them_hands) {
+			for (i = 0; i < hands[types[type_k], "index"]; i++) {
+				if (them_hands[sort_k] == hands[types[type_k], i, "cards"]) {
+					total += counter++ * hands[types[type_k], i, "bid"]
+				}
+			}
+		}
+	}
+	print total
+}
+
+function card_order(i1, v1, i2, v2,		hand1, hand2, card1, card2, c, v) {
+	split(v1, hand1, "")
+	split(v2, hand2, "")
+	for ( c = 1; c <= 5; c++) {
+		card1 = get_card_value(hand1[c])
+		card2 = get_card_value(hand2[c])
+		if (card1 != card2) break
+	}
+	if (card1 == card2) v = 0
+	else if (card1 > card2) v = 1
+	else v = -1
+	return v
+}
+
+function card_value(card,		k) {
+	for (k in cards) {
+		if (card == cards[k]) {
+			return k
+		}
+	}
+}
+
+function max(arr,		k, m) {
+	m = 0
+	for (k in arr) {
+    if (k == 1) continue # Do not include J is count of highest cards
+		if (arr[k] > m) {
+			m = arr[k]
+		}
+	}
+	return m
+}
+
+function get_card_value(card) {
+	switch (card) {
+		case "A":
+			return 13
+		case "K":
+			return 12
+		case "Q":
+			return 11
+		case "J":
+			return 1
+		case "T":
+			return 10
+    default:
+      return card + 0
+	}
+}
+
+function get_hand_type(hand_counts,		m, n, high) {
+	h_t = "high"
+	m = max(hand_counts)
+  m += hand_counts[1]
+	if (m == 5) {
+		h_t = "five"
+	} else if (m == 4) {
+		h_t = "four"
+	} else {
+		asort(hand_counts)
+		n = hand_counts[length(cards) - 1]
+		if (m == 3 && n == 2) {
+			h_t = "full"
+		} else if (m == 3) {
+			h_t = "three"
+		} else if (m == 2 && n == 2) {
+			h_t = "two"
+		} else if (m == 2) {
+			h_t = "one"
+		} else {
+			h_t = "high"
+		}
+	}
+	return h_t
+}
