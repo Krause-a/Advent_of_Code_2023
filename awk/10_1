@@ -1,0 +1,142 @@
+#!/bin/awk -f
+
+BEGIN {
+  symbols["vt"] = "|"
+  symbols["hr"] = "-"
+  symbols["ne"] = "L"
+  symbols["nw"] = "J"
+  symbols["se"] = "F"
+  symbols["sw"] = "7"
+  symbols["gr"] = "."
+  symbols["st"] = "S"
+  valid["north"]= "|7F"
+  valid["south"]= "|LJ"
+  valid["east"] = "-J7"
+  valid["west"] = "-LF"
+  split("north south east west", cardinals)
+  FS = ""
+}
+
+{
+  max_x = NF
+  for (i = 1; i <= NF; i++) {
+    grid[i, NR] = $i
+    if ($i == "S") {
+      start[1] = i
+      start[2] = NR
+    }
+  }
+}
+
+END {
+  max_y = NR
+  search(start[1], start[2], 0)
+  # print_arr(searched_grid)
+  print int(max_depth / 2) + 1
+}
+
+function search(x, y, depth,    neighs, neigh_k, point) {
+  # print "Searching on " x ", " y " at depth " depth " (is_searched? = " is_searched(x, y) ")"
+  searched_grid[x, y] = depth
+  max_depth = max(max_depth, depth)
+  connected_neighbors(x, y, neighs)
+  for (neigh_k in neighs) {
+    offset_from_cardinal(x, y, neigh_k, point)
+    if (!is_searched(point[1], point[2])){
+      # print "For neighbor to the " neigh_k " we find point " point[1] ", " point[2] " which is " grid[point[1], point[2]]
+      search(point[1], point[2], depth+1)
+      print "search depth " depth
+    }
+  }
+}
+
+function max(a, b) {
+  return a > b ? a : b
+}
+
+function offset_from_cardinal(x, y, card, _offset) {
+  split("", _offset)
+  switch (card) {
+    case "north":
+      _offset[1] = x
+      _offset[2] = y-1
+      break;
+    case "south":
+      _offset[1] = x
+      _offset[2] = y+1
+      break;
+    case "east":
+      _offset[1] = x+1
+      _offset[2] = y
+      break;
+    case "west":
+      _offset[1] = x-1
+      _offset[2] = y
+      break;
+  }
+  # print card
+  # print "Coming from " x ", " y
+  # print_arr(_offset)
+}
+
+function connected_neighbors(x, y, _neighbors,    cardinals_points, card_k) {
+  split("", _neighbors)
+  neighbors(x, y, cardinals_points)
+  # print " "
+  # print_arr(cardinals_points)
+  # print " "
+  # print_arr(cardinals)
+  # print " "
+  for (card_k in cardinals) {
+    # print "valid[cardinals[card_k]] = " valid[cardinals[card_k]]
+    # print_arr(cardinals_points);
+    # print "cardinals_points[cardinals[card_k]] = " cardinals_points[cardinals[card_k]]
+    # print cardinals[card_k]
+    # print "index(valid, card_p) = " index(valid[cardinals[card_k]], cardinals_points[cardinals[card_k]])
+    if (length(cardinals_points[cardinals[card_k]]) > 0 && index(valid[cardinals[card_k]], cardinals_points[cardinals[card_k]])) {
+      # print "Finding connected neighbor to the " cardinals[card_k]
+      # print "index returned " index(valid[cardinals[card_k]], cardinals_points[cardinals[card_k]]) " with arguments (" valid[cardinals[card_k]] ", " cardinals_points[cardinals[card_k]] ")"
+      # print "Is connected neighbor " cardinals[card_k] " at " cardinals_points[cardinals[card_k]]
+      _neighbors[cardinals[card_k]] = cardinals_points[cardinals[card_k]]
+    }
+  }
+}
+
+function neighbors(x, y, _neighbors,  offs, k) {
+  split("", _neighbors)
+  get_offsets(x, y, offs)
+  for (k in offs) {
+    # print "Finding neightbors to the " offs[k] " at " k " len " length(k)
+    _neighbors[offs[k]] = grid[k]
+  }
+}
+
+function get_offsets(x, y, _offsets) {
+  split("", _offsets)
+  if (y > 1 && !is_searched(x, y-1))
+    _offsets[x, y-1] = "north"
+  if (y < max_y && !is_searched(x, y+1))
+    _offsets[x, y+1] = "south"
+  if (x > 1 && !is_searched(x-1, y))
+    _offsets[x-1, y] = "west"
+  if (x < max_x && !is_searched(x+1, y))
+    _offsets[x+1, y] = "east"
+  # print "Printing get_offsets"
+  # print_arr(_offsets)
+}
+
+function print_arr(arr,   k) {
+  for (k in arr) {
+    print k "=>" arr[k]
+  }
+}
+
+function is_searched(x, y) {
+  return (arr_contains_key(searched_grid, x SUBSEP y))
+}
+
+function arr_contains_key(arr, key,   k) {
+  for (k in arr)
+    if (key == k) return 1
+  return 0
+}

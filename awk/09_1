@@ -1,7 +1,13 @@
 #!/bin/awk -f
 
+BEGIN {
+  split("1938800271", fails)
+  print_arr(fails)
+}
+
 # NR == 27{
 {
+  print "New Line!"
   split($0, line)
   depth = 0
   split("", prediction_lines)
@@ -18,10 +24,14 @@
   # print_arr_as_line(line, rep(" ", depth))
   # print_arr(prediction_lines)
   answer = 0
-  for (; depth >= 0; depth--) {
+  while (depth-- > 0) {
     answer += prediction_lines[depth, NF]
-    # print answer
+    print answer
   }
+  # for (; depth >= 0; depth--) {
+  #   answer += prediction_lines[depth, NF]
+  #   # print answer
+  # }
   sum += answer
   # print answer
   # ratio = answer / sanity_check
@@ -33,7 +43,13 @@
   # }
 }
 END {
-  print sum
+  print "Ending sum"
+  if (in_arr(sum, fails)) {
+    print "FAIL: " sum
+  }
+  else {
+    print sum
+  }
 }
 
 function print_arr_as_line(arr, p_line, k) {
@@ -94,4 +110,11 @@ function meld(arr, key, _out_arr,   k) {
 
 function abs(v) {
   return v > 0 ? v : -v
+}
+
+function in_arr(value, arr,   k) {
+  for (k in arr) {
+    if (arr[k] == value) return 1
+  }
+  return 0
 }
