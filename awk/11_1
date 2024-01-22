@@ -1,0 +1,105 @@
+#!/bin/awk -f
+
+BEGIN {
+	FS = ""
+	row_k = 1
+}
+/#/ {
+	split($0, chars)
+	col_k = 1
+	for ( ch in chars ) {
+		grid[row_k, col_k++] = chars[ch]
+	}
+	row_k++
+	next
+}
+/./ { # No Galaxy
+	split($0, chars)
+	col_k = 1
+	for ( ch in chars ) {
+		grid[row_k, col_k] = chars[ch]
+		grid[row_k + 1, col_k] = chars[ch]
+		col_k++
+	}
+	row_k++
+	row_k++
+}
+
+END {
+	row_max = row_k - 1
+	col_max = col_k - 1
+	write_col = 1
+	for (col_k = 1; col_k <= col_max; col_k++) {
+		has_gal = 0;
+		for (row_k = 1; row_k <= row_max; row_k++) {
+			res_grid[row_k, write_col] = grid[row_k, col_k]
+			if (grid[row_k, col_k] == "#") {
+				has_gal = 1
+			}
+		}
+		write_col++
+		if ( !has_gal ) {
+			for (row_k = 1; row_k <= row_max; row_k++) {
+				res_grid[row_k, write_col] = grid[row_k, col_k]
+			}
+			write_col++
+		}
+	}
+	col_max += write_col - col_k
+
+	for (row_k = 1; row_k <= row_max; row_k++) {
+		for (col_k = 1; col_k <= col_max; col_k++) {
+			if (res_grid[row_k, col_k] == "#") {
+				points[row_k, col_k] = ++point_index
+			}
+		}
+	}
+	for (row_k = 1; row_k <= row_max; row_k++) {
+		for (col_k = 1; col_k <= col_max; col_k++) {
+			if ((row_k, col_k) in points) {
+			# print "main point (" row_k ", " col_k ")"
+				col_inner_one_offset = col_k
+				for (row_inner_k = row_k; row_inner_k <= row_max; row_inner_k++) {
+					for (col_inner_k = col_inner_one_offset + 1; col_inner_k <= col_max; col_inner_k++) {
+						if ((row_inner_k, col_inner_k) in points) {
+							# print "(" row_inner_k ", " col_inner_k ") - (" row_k ", " col_k ") = " (abs(row_inner_k - row_k) + abs(col_inner_k - col_k))
+							dist_sum += abs(row_inner_k - row_k) + abs(col_inner_k - col_k)
+						}
+					}
+					col_inner_one_offset = 0
+				}
+
+			}
+		}
+	}
+	print dist_sum
+
+
+}
+
+
+function print_grid(){
+	for (row_k = 1; row_k <= row_max; row_k++) {
+		o = ""
+		for (col_k = 1; col_k <= col_max; col_k++) {
+			o = o res_grid[row_k, col_k];
+		}
+		print o
+	}
+}
+
+
+
+
+
+
+function abs(a) {
+	return a >= 0 ? a : -a
+}
+
+
+function repeat(c, n,	r, i) {
+	for ( i = 1; i <= n; i++)
+		r = r c
+	return r
+}

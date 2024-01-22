@@ -13,7 +13,7 @@ BEGIN {
 	for (c_t in cards) {
 		hand[c_t] = gsub(cards[c_t], cards[c_t], $1)
 	}
-  if (length($1) < 1) next
+	if (length($1) < 1) next
 	type_k = get_hand_type(hand)
 
 	ind = hands[type_k, "index"]++
@@ -64,7 +64,7 @@ function card_value(card,		k) {
 function max(arr,		k, m) {
 	m = 0
 	for (k in arr) {
-    if (k == 1) continue # Do not include J is count of highest cards
+		if (k == 1) continue # Do not include J is count of highest cards
 		if (arr[k] > m) {
 			m = arr[k]
 		}
