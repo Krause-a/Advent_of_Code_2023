@@ -1,0 +1,123 @@
+#!/bin/awk -f
+
+BEGIN {
+	FS = ""
+	row_k = 1
+	distortion_space = 999999
+	gap_row_k = 1
+	gap_col_k = 1
+}
+/#/ {
+	split($0, chars)
+	col_k = 1
+	for ( ch in chars ) {
+		grid[row_k, col_k++] = chars[ch]
+	}
+	row_k++
+	next
+}
+/./ { # No Galaxy
+	split($0, chars)
+	gap_rows[gap_row_k++] = NR
+	col_k = 1
+	for ( ch in chars ) {
+		grid[row_k, col_k++] = chars[ch]
+	}
+	row_k++
+}
+
+END {
+	row_max = row_k - 1
+	col_max = col_k - 1
+
+	# Find which columns are missing a galaxy.
+	for (col_k = 1; col_k <= col_max; col_k++) {
+		has_gal = 0;
+		for (row_k = 1; row_k <= row_max; row_k++) {
+			res_grid[row_k, col_k] = grid[row_k, col_k]
+			if (grid[row_k, col_k] == "#") {
+				has_gal = 1
+			}
+		}
+		if ( !has_gal ) {
+			gap_cols[gap_col_k++] = col_k
+		}
+	}
+
+	# Collect all points
+	for (row_k = 1; row_k <= row_max; row_k++) {
+		for (col_k = 1; col_k <= col_max; col_k++) {
+			if (res_grid[row_k, col_k] == "#") {
+				points[row_k, col_k] = ++point_index
+			}
+		}
+	}
+
+	# Create path for each point pair
+	for (row_k = 1; row_k <= row_max; row_k++) {
+		for (col_k = 1; col_k <= col_max; col_k++) {
+			if ((row_k, col_k) in points) {
+			# print "main point (" row_k ", " col_k ")"
+				col_inner_one_offset = col_k
+				for (row_inner_k = row_k; row_inner_k <= row_max; row_inner_k++) {
+					for (col_inner_k = col_inner_one_offset + 1; col_inner_k <= col_max; col_inner_k++) {
+						if ((row_inner_k, col_inner_k) in points) {
+							max_row = max(row_k, row_inner_k)
+							min_row = min(row_k, row_inner_k)
+							max_col = max(col_k, col_inner_k)
+							min_col = min(col_k, col_inner_k)
+							for (gap_row_k in gap_rows) {
+								if (gap_rows[gap_row_k] > min_row && gap_rows[gap_row_k] < max_row) {
+									gap_collisions++
+								}
+							}
+							for (gap_col_k in gap_cols) {
+								if (gap_cols[gap_col_k] > min_col && gap_cols[gap_col_k] < max_col) {
+									gap_collisions++
+								}
+							}
+							# print "(" row_inner_k ", " col_inner_k ") - (" row_k ", " col_k ") = " (abs(row_inner_k - row_k) + abs(col_inner_k - col_k))
+							dist_sum += abs(row_inner_k - row_k) + abs(col_inner_k - col_k)
+						}
+					}
+					col_inner_one_offset = 0
+				}
+			}
+		}
+	}
+	print gap_collisions
+	print dist_sum
+	print dist_sum + gap_collisions * distortion_space
+
+
+}
+
+
+function print_grid(){
+	for (row_k = 1; row_k <= row_max; row_k++) {
+		o = ""
+		for (col_k = 1; col_k <= col_max; col_k++) {
+			o = o res_grid[row_k, col_k];
+		}
+		print o
+	}
+}
+
+function abs(a) {
+	return a >= 0 ? a : -a
+}
+
+
+function repeat(c, n,	r, i) {
+	for ( i = 1; i <= n; i++)
+		r = r c
+	return r
+}
+
+function max(a,b) {
+	return a - b >= 0 ? a : b
+}
+
+function min(a,b) {
+	return b - a >= 0 ? a : b
+}
